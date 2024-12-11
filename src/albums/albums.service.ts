@@ -1,26 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Albums } from './schema/album.schema';
+import { Model } from 'mongoose';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 
 @Injectable()
 export class AlbumsService {
-  create(createAlbumDto: CreateAlbumDto) {
-    return 'This action adds a new album';
+  constructor(@InjectModel('albums') private albumsModel: Model<Albums>) {}
+  async getAllData(): Promise<Albums[]> {
+    const albums = await this.albumsModel.find();
+    return albums;
   }
-
-  findAll() {
-    return `This action returns all albums`;
+  async getOneData(id: string): Promise<Albums> {
+    const getOne = await this.albumsModel.findById(id);
+    return getOne;
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} album`;
+  async deleteData(id: string): Promise<Albums> {
+    const deleteOne = await this.albumsModel.findByIdAndDelete(id);
+    return deleteOne;
   }
-
-  update(id: number, updateAlbumDto: UpdateAlbumDto) {
-    return `This action updates a #${id} album`;
+  async updateData(id: string, data: UpdateAlbumDto): Promise<Albums> {
+    const updatedAlbum = await this.albumsModel.findByIdAndUpdate(id, data, {
+      new: true,
+    });
+    return updatedAlbum;
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} album`;
+  async createAlbum(data: CreateAlbumDto): Promise<Albums> {
+    const newAlbums = await this.albumsModel.create(data);
+    await newAlbums.save();
+    return newAlbums;
   }
 }
