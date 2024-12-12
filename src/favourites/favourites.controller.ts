@@ -1,45 +1,54 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Put,
-} from '@nestjs/common';
+import { Controller, Post, Body, Param, Delete, Get } from '@nestjs/common';
 import { FavouritesService } from './favourites.service';
 import { CreateFavouriteDto } from './dto/create-favourite.dto';
 import { UpdateFavouriteDto } from './dto/update-favourite.dto';
 
-@Controller('favourites')
+@Controller('favs')
 export class FavouritesController {
   constructor(private readonly favouritesService: FavouritesService) {}
-
-  @Post('/')
-  create(@Body() createFavoritesDto: CreateFavouriteDto) {
-    return this.favouritesService.createFavorites(createFavoritesDto);
-  }
-
   @Get('/')
-  findAll() {
+  getAllFav() {
     return this.favouritesService.getAllData();
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.favouritesService.getOneData(id);
+  addTrackToFav(
+    @Param('id') id: string,
+    @Body() createFavoritesDto: CreateFavouriteDto,
+  ) {
+    return this.favouritesService.addTrack(id, createFavoritesDto.track);
   }
-
-  @Put(':id')
-  update(
+  @Delete('/track/:id')
+  removeTrackFromFav(
     @Param('id') id: string,
     @Body() updateFavoritesDto: UpdateFavouriteDto,
   ) {
-    return this.favouritesService.updateData(id, updateFavoritesDto);
+    return this.favouritesService.deleteTrack(id, updateFavoritesDto.track);
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.favouritesService.deleteData(id);
+  @Post('/album/:id')
+  addAlbumToFav(
+    @Param('id') id: string,
+    @Body() createFavoritesDto: CreateFavouriteDto,
+  ) {
+    return this.favouritesService.addAlbum(id, createFavoritesDto.album);
+  }
+  @Delete('/album/:id')
+  removeAlbumFromFav(
+    @Param('id') id: string,
+    @Body() updateFavoritesDto: UpdateFavouriteDto,
+  ) {
+    return this.favouritesService.deleteAlbum(id, updateFavoritesDto.album);
+  }
+  @Post('/artist/:id')
+  addArtistToFav(
+    @Param('id') id: string,
+    @Body() createFavoritesDto: CreateFavouriteDto,
+  ) {
+    return this.favouritesService.addArtist(id, createFavoritesDto.artist);
+  }
+  @Delete('/artist/:id')
+  removeArtistFromFav(
+    @Param('id') id: string,
+    @Body() updateFavoritesDto: UpdateFavouriteDto,
+  ) {
+    return this.favouritesService.deleteArtist(id, updateFavoritesDto.artist);
   }
 }
