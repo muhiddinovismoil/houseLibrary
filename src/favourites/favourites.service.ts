@@ -1,98 +1,33 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Inject, Injectable } from '@nestjs/common';
 import { Favorites } from './schema/favourite.schema';
+import { FavouriteRepository } from './repository/favourites.repository';
 
 @Injectable()
 export class FavouritesService {
-  constructor(
-    @InjectModel('favorite') private favoritesModel: Model<Favorites>,
-  ) {}
-  async getAllData(): Promise<Favorites[]> {
-    const favorites = await this.favoritesModel.find();
-    return favorites;
+  constructor(@Inject() private favouriteRepository: FavouriteRepository) {}
+  async getAllFavourites(): Promise<Favorites[]> {
+    return await this.favouriteRepository.getAllData();
   }
-  async addTrack(id: string, track: string[]): Promise<Favorites> {
-    const favorite = await this.favoritesModel.findByIdAndUpdate(
-      id,
-      { $push: { tracks: track } },
-      { new: true },
-    );
-
-    if (!favorite) {
-      throw new NotFoundException('Favorites not found');
-    }
-
-    return favorite;
+  async addTrackToFav(id: string, track: string[]): Promise<Favorites> {
+    return await this.favouriteRepository.addTrack(id, track);
+  }
+  async deleteTrackFromFav(id: string, track: string[]): Promise<Favorites> {
+    return await this.favouriteRepository.deleteTrack(id, track);
+  }
+  async addAlbumToFav(id: string, album: string[]): Promise<Favorites> {
+    return await this.favouriteRepository.addAlbum(id, album);
+  }
+  async deleteAlbumFromFav(id: string, album: string[]): Promise<Favorites> {
+    return await this.favouriteRepository.deleteAlbum(id, album);
   }
 
-  async deleteTrack(id: string, track: string[]): Promise<Favorites> {
-    const favorite = await this.favoritesModel.findByIdAndUpdate(
-      id,
-      { $pull: { tracks: track } },
-      { new: true },
-    );
-
-    if (!favorite) {
-      throw new NotFoundException('Favorites not found');
-    }
-
-    return favorite;
+  async addArtistToFav(id: string, artistId: string[]): Promise<Favorites> {
+    return await this.favouriteRepository.addArtist(id, artistId);
   }
-
-  async addAlbum(id: string, album: string[]): Promise<Favorites> {
-    const favorite = await this.favoritesModel.findByIdAndUpdate(
-      id,
-      { $push: { albums: album } },
-      { new: true },
-    );
-
-    if (!favorite) {
-      throw new NotFoundException('Favorites not found');
-    }
-
-    return favorite;
-  }
-
-  async deleteAlbum(id: string, album: string[]): Promise<Favorites> {
-    const favorite = await this.favoritesModel.findByIdAndUpdate(
-      id,
-      { $pull: { albums: album } },
-      { new: true },
-    );
-
-    if (!favorite) {
-      throw new NotFoundException('Favorites not found');
-    }
-
-    return favorite;
-  }
-
-  async addArtist(id: string, artistId: string[]): Promise<Favorites> {
-    const favorite = await this.favoritesModel.findByIdAndUpdate(
-      id,
-      { $push: { artists: artistId } },
-      { new: true },
-    );
-
-    if (!favorite) {
-      throw new NotFoundException('Favorites not found');
-    }
-
-    return favorite;
-  }
-
-  async deleteArtist(id: string, artistId: string[]): Promise<Favorites> {
-    const favorite = await this.favoritesModel.findByIdAndUpdate(
-      id,
-      { $pull: { artists: artistId } },
-      { new: true },
-    );
-
-    if (!favorite) {
-      throw new NotFoundException('Favorites not found');
-    }
-
-    return favorite;
+  async deleteArtistFromFav(
+    id: string,
+    artistId: string[],
+  ): Promise<Favorites> {
+    return await this.favouriteRepository.deleteArtist(id, artistId);
   }
 }
