@@ -18,7 +18,7 @@ export class AuthController {
 
   @Post('register')
   async registerUser(@Body() createAuthDto: CreateAuthDto) {
-    const newUser = await this.usersService.register(createAuthDto);
+    const newUser = await this.usersService.registerUsers(createAuthDto);
     if (!newUser) {
       return {
         status: 'failed',
@@ -30,7 +30,7 @@ export class AuthController {
 
   @Post('login')
   async loginUser(@Body() loginAuthDto: UpdateAuthDto) {
-    const response = await this.usersService.login(loginAuthDto);
+    const response = await this.usersService.loginUser(loginAuthDto);
     if (!response) {
       return { status: 'failed', message: 'Invalid login credentials' };
     }
@@ -38,11 +38,11 @@ export class AuthController {
   }
   @Get('/')
   async getAll() {
-    return this.usersService.getAllData();
+    return this.usersService.getAllUsers();
   }
   @Get(':id')
   async getById(@Param('id') id: string) {
-    return this.usersService.getOneData(id);
+    return this.usersService.getOneUserData(id);
   }
   @Put(':id')
   async update(
@@ -50,7 +50,7 @@ export class AuthController {
     @Body() updateAuthDto: IUpdatePassword,
   ) {
     try {
-      const updatePass = await this.usersService.updatePassword(
+      const updatePass = await this.usersService.updatePasswordById(
         id,
         updateAuthDto,
       );
@@ -67,7 +67,7 @@ export class AuthController {
   }
   @Delete(':id')
   async deleteUser(@Param('id') id: string) {
-    const response = await this.usersService.deleteUser(id);
+    const response = await this.usersService.deleteUserById(id);
     return { message: 'User deleted', deletedUser: response };
   }
 }

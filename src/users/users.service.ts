@@ -1,91 +1,29 @@
-import * as bcrypt from 'bcrypt';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schema/users.schema';
-import { Model } from 'mongoose';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { IUpdatePassword } from 'src/interfaces/interfaces';
+import { UsersRepository } from './repository/users.repository';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel('users') private usersModel: Model<User>) {}
-  async register(data: CreateAuthDto): Promise<User | null> {
-    const currUser = await this.usersModel.findOne({ email: data.email });
-    if (currUser) {
-      return null;
-    }
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(data.password, salt);
-    const newUser = new this.usersModel({
-      ...data,
-      password: hashedPassword,
-    });
-    await newUser.save();
-    const userObject = newUser.toObject();
-    delete userObject.password;
-    return userObject;
+  constructor(@Inject() private usersRepository: UsersRepository) {}
+  async registerUsers(data: CreateAuthDto): Promise<User | null> {
+    return await this.usersRepository.register(data);
   }
-  async login(data: UpdateAuthDto): Promise<object> {
-    if (!data.email || !data.password) {
-      return { message: 'Email and password must not be empty' };
-    }
-    const currUser = await this.usersModel.findOne({ email: data.email });
-    if (!currUser) {
-      return { message: 'User not found' };
-    }
-    const comparePass = await bcrypt.compare(data.password, currUser.password);
-    if (!comparePass) {
-      return { message: 'Incorrect email or password' };
-    }
-    return {
-      message: 'You are logged in',
-      user: { id: currUser._id, email: currUser.email },
-    };
+  async loginUser(data: UpdateAuthDto): Promise<object> {
+    return this.usersRepository.login(data);
   }
-  async updatePassword(id: string, data: IUpdatePassword): Promise<object> {
-    const currUser = await this.usersModel.findById(id);
-    if (!currUser) {
-      throw new Error('User not found');
-    }
-    const isOldPasswordCorrect = await bcrypt.compare(
-      data.oldPassword,
-      currUser.password,
-    );
-    if (!isOldPasswordCorrect) {
-      throw new Error('Your old password does not match');
-    }
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(data.newPassword, salt);
-    await this.usersModel.findByIdAndUpdate(id, { password: hashedPassword });
-    return { message: 'Your password has been updated successfully' };
+  async updatePasswordById(id: string, data: IUpdatePassword): Promise<object> {
+    return await this.usersRepository.updatePassword(id, data);
   }
-  async deleteUser(id: string): Promise<object> {
-    const deleteUser = await this.usersModel.findByIdAndDelete(id);
-    if (!deleteUser) {
-      return {
-        msg: 'Not found',
-      };
-    }
-    return deleteUser.id;
+  async deleteUserById(id: string): Promise<object> {
+    return await this.usersRepository.deleteUser(id);
   }
-  async getAllData(): Promise<object> {
-    const users = await this.usersModel.find();
-    if (users.length == 0) {
-      return { msg: 'NOT FOUND' };
-    }
-    const sanitizedUsers = users.map((user) => {
-      const userObject = user.toObject();
-      delete userObject.password;
-      return userObject;
-    });
-    return sanitizedUsers;
+  async getAllUsers(): Promise<object> {
+    return await this.usersRepository.getAllData();
   }
-  async getOneData(id: string): Promise<object> {
-    const getOne = await this.usersModel.findById(id);
-    if (!getOne) {
-      return { msg: 'NOT FOUND' };
-    }
-    return getOne;
+  async getOneUserData(id: string): Promise<object> {
+    return await this.usersRepository.getOneData(id);
   }
 }
